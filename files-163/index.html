@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Always an Adventure</title>
+<style>
+  :root {
+    --green: #0F6E56; --green-light: #E1F5EE; --green-mid: #1D9E75; --green-dark: #085041;
+    --blue: #185FA5; --blue-light: #E6F1FB;
+    --amber: #854F0B; --amber-light: #FAEEDA;
+    --coral: #993C1D; --coral-light: #FAECE7;
+    --purple: #534AB7; --purple-light: #EEEDFE;
+    --text: #1a1a1a; --text-muted: #555; --text-hint: #999;
+    --border: rgba(0,0,0,0.10); --bg: #fff; --bg-soft: #f7f6f2;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-soft); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(150deg, #042C53 0%, #0C447C 40%, #0F6E56 100%);
+    padding: 3.5rem 1.5rem 2.5rem;
+    position: relative; overflow: hidden; text-align: center;
+  }
+  header::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.07;
+    background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #9FE1CB; margin-bottom: 10px; }
+  header h1 { color: #fff; font-size: 38px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; }
+  header h1 span { color: #5DCAA5; }
+  .tagline { color: #B5D4F4; font-size: 15px; margin-top: 10px; line-height: 1.6; }
+  .compass { font-size: 44px; margin-bottom: 12px; display: block; }
+
+  /* NAV PILLS */
+  .section-nav {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    margin-top: 1.75rem;
+  }
+  .nav-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 20px;
+    background: rgba(255,255,255,0.12); border: 0.5px solid rgba(255,255,255,0.2);
+    color: #fff; font-size: 12px; font-weight: 500;
+    text-decoration: none; transition: background 0.15s;
+  }
+  .nav-pill:hover { background: rgba(255,255,255,0.22); }
+
+  /* MAIN CONTENT */
+  .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-hint);
+    margin-bottom: 14px; margin-top: 2.5rem;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* FEATURE CARD (large, full width) */
+  .feature-card {
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    text-decoration: none; color: inherit;
+    margin-bottom: 12px; transition: box-shadow 0.15s, border-color 0.15s;
+    min-height: 130px;
+  }
+  .feature-card:hover { border-color: rgba(0,0,0,0.2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .feature-accent { width: 6px; flex-shrink: 0; }
+  .feature-body { padding: 1.25rem 1.5rem; flex: 1; }
+  .feature-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .feature-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .feature-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .feature-meta { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-size: 11px; padding: 3px 9px; border-radius: 10px;
+    border: 0.5px solid var(--border); color: var(--text-hint);
+    background: var(--bg-soft);
+  }
+  .feature-arrow {
+    display: flex; align-items: center; padding: 0 1.25rem;
+    color: var(--text-hint); font-size: 20px; flex-shrink: 0;
+  }
+  .coming-soon {
+    opacity: 0.55; cursor: default; pointer-events: none;
+  }
+  .badge-soon {
+    font-size: 10px; padding: 2px 8px; border-radius: 8px;
+    background: var(--amber-light); color: var(--amber);
+    border: 0.5px solid rgba(133,79,11,0.2); font-weight: 500;
+  }
+
+  /* CARD GRID (2-col) */
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px; margin-bottom: 12px;
+  }
+  .mini-card {
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+    text-decoration: none; color: inherit; display: block;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .mini-card:hover { border-color: rgba(0,0,0,0.2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .mini-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 10px;
+  }
+  .mini-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .mini-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 2rem 1rem;
+    font-size: 12px; color: var(--text-hint);
+    border-top: 0.5px solid var(--border);
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 2.5rem 1rem 2rem; }
+    header h1 { font-size: 28px; }
+    .container { padding: 1.25rem 1rem 2rem; }
+    .feature-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hero-inner">
+    <span class="compass">🧭</span>
+    <p class="eyebrow">your adventure hub</p>
+    <h1>Always an<br><span>Adventure</span></h1>
+    <p class="tagline">Camping · RVing · National Parks · Sewing · Sea Cadets · Exploring</p>
+    <nav class="section-nav" aria-label="Quick links">
+      <a href="parks.html" class="nav-pill">⛰ National Parks</a>
+      <a href="#camping" class="nav-pill">⛺ Camping</a>
+      <a href="#rv" class="nav-pill">🚐 RV Trips</a>
+      <a href="#sewing" class="nav-pill">🧵 Sewing</a>
+      <a href="#cadets" class="nav-pill">⚓ Sea Cadets</a>
+      <a href="#bucket" class="nav-pill">✦ Bucket List</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <p class="section-label">ready to explore</p>
+
+  <a href="parks.html" class="feature-card">
+    <div class="feature-accent" style="background: var(--green-mid);"></div>
+    <div class="feature-body">
+      <span class="feature-icon">⛰</span>
+      <div class="feature-title">National Parks Tracker</div>
+      <div class="feature-desc">Check off every NPS site you've visited — 63 official National Parks and all 433 NPS units, with live progress and filters.</div>
+      <div class="feature-meta">
+        <span class="chip">63 National Parks</span>
+        <span class="chip">433 NPS Sites</span>
+        <span class="chip">Progress tracking</span>
+        <span class="chip">Search &amp; filter</span>
+      </div>
+    </div>
+    <div class="feature-arrow">→</div>
+  </a>
+
+  <p class="section-label" id="camping" style="scroll-margin-top:1rem;">coming soon</p>
+
+  <div class="card-grid">
+    <div class="mini-card coming-soon" id="rv">
+      <div class="mini-icon" style="background:var(--amber-light);">⛺</div>
+      <div class="mini-title">Camping Trip Journal</div>
+      <div class="mini-desc">Log campsites, packing lists, and memories from every trip.</div>
+      <div style="margin-top:8px;"><span class="badge-soon">Coming soon</span></div>
+    </div>
+    <div class="mini-card coming-soon">
+      <div class="mini-icon" style="background:var(--blue-light);">🚐</div>
+      <div class="mini-title">RV Trip Log</div>
+      <div class="mini-desc">Track routes, campground ratings, miles traveled, and expenses.</div>
+      <div style="margin-top:8px;"><span class="badge-soon">Coming soon</span></div>
+    </div>
+    <div class="mini-card coming-soon" id="sewing">
+      <div class="mini-icon" style="background:var(--purple-light);">🧵</div>
+      <div class="mini-title">Sewing Studio</div>
+      <div class="mini-desc">Active projects, fabric stash, patterns wishlist, and completed gallery.</div>
+      <div style="margin-top:8px;"><span class="badge-soon">Coming soon</span></div>
+    </div>
+    <div class="mini-card coming-soon" id="cadets">
+      <div class="mini-icon" style="background:var(--coral-light);">⚓</div>
+      <div class="mini-title">Sea Cadets Hub</div>
+      <div class="mini-desc">Volunteer hours, event calendar, and unit updates.</div>
+      <div style="margin-top:8px;"><span class="badge-soon">Coming soon</span></div>
+    </div>
+    <div class="mini-card coming-soon" id="bucket">
+      <div class="mini-icon" style="background:var(--green-light);">✦</div>
+      <div class="mini-title">Adventure Bucket List</div>
+      <div class="mini-desc">Hikes, destinations, and experiences — dream it, plan it, check it off.</div>
+      <div style="margin-top:8px;"><span class="badge-soon">Coming soon</span></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Made with ♥ for every adventure, big and small.
+</footer>
+
+</body>
+</html>
