@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adventure Bucket List · Always an Adventure</title>
+<style>
+  :root {
+    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #1D9E75;
+    --purple: #534AB7; --purple-light: #EEEDFE;
+    --amber: #854F0B; --amber-light: #FAEEDA; --amber-mid: #BA7517;
+    --coral: #993C1D; --coral-light: #FAECE7;
+    --text: #1a1a1a; --text-muted: #555; --text-hint: #999;
+    --border: rgba(0,0,0,0.11); --bg: #fff; --bg-soft: #f7f6f2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-soft); color: var(--text); }
+  .back-bar { background: #042C53; padding: 10px 1.5rem; }
+  .back-link { color: #9FE1CB; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+  .back-link:hover { color: #fff; }
+  header { background: linear-gradient(135deg, #04342C 0%, #1D9E75 60%, #534AB7 100%); padding: 2rem 1.5rem 1.5rem; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; opacity: 0.07; background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px; }
+  header .inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+  header h1 { color: #fff; font-size: 26px; font-weight: 700; }
+  header p { color: #9FE1CB; font-size: 13px; margin-top: 4px; }
+  .stats-bar { display: flex; gap: 12px; margin-top: 1.25rem; flex-wrap: wrap; }
+  .stat { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; }
+  .stat-num { color: #fff; font-size: 22px; font-weight: 700; }
+  .stat-lbl { color: #9FE1CB; font-size: 11px; margin-top: 1px; }
+  .progress-track { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 1rem; }
+  .progress-fill { height: 100%; border-radius: 3px; background: #5DCAA5; transition: width 0.3s; }
+  .prog-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .prog-row span { color: #9FE1CB; font-size: 12px; }
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg); border-radius: 10px; padding: 4px; border: 0.5px solid var(--border); }
+  .tab { flex: 1; padding: 9px 12px; border-radius: 7px; border: none; background: none; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-muted); transition: all 0.15s; text-align: center; }
+  .tab.active { background: var(--teal); color: #fff; }
+  .add-form { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
+  .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-full { grid-column: 1/-1; }
+  label { font-size: 11px; font-weight: 600; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+  input, textarea, select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg-soft); font-size: 13px; color: var(--text); outline: none; font-family: inherit; }
+  input:focus, textarea:focus, select:focus { border-color: var(--teal-mid); background: var(--bg); }
+  textarea { resize: vertical; min-height: 70px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-primary { padding: 9px 18px; border-radius: 8px; border: none; background: var(--teal); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: #085041; }
+  .btn-secondary { padding: 9px 18px; border-radius: 8px; border: 0.5px solid var(--border); background: none; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+  .item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; cursor: pointer; transition: border-color 0.12s; }
+  .item:hover { border-color: rgba(0,0,0,0.2); }
+  .item.done { background: var(--teal-light); border-color: rgba(29,158,117,0.25); }
+  .check-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: all 0.15s; }
+  .item.done .check-circle { background: var(--teal); border-color: var(--teal); }
+  .check-mark { color: #fff; font-size: 12px; display: none; }
+  .item.done .check-mark { display: block; }
+  .item-body { flex: 1; }
+  .item-title { font-size: 14px; font-weight: 600; }
+  .item.done .item-title { color: var(--teal); text-decoration: line-through; text-decoration-color: rgba(15,110,86,0.4); }
+  .item-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .item-notes { font-size: 13px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+  .item-footer { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 3px 9px; border-radius: 10px; background: var(--bg-soft); border: 0.5px solid var(--border); color: var(--text-hint); }
+  .tag.teal { background: var(--teal-light); color: var(--teal); }
+  .tag.amber { background: var(--amber-light); color: var(--amber); }
+  .tag.purple { background: var(--purple-light); color: var(--purple); }
+  .tag.coral { background: var(--coral-light); color: var(--coral); }
+  .delete-btn { background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 15px; padding: 2px 5px; border-radius: 4px; margin-left: auto; flex-shrink: 0; }
+  .delete-btn:hover { color: #c0392b; }
+  .ext-link { color: var(--teal); text-decoration: underline; font-size: 12px; }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-hint); font-size: 14px; }
+  .cat-icon { font-size: 18px; flex-shrink: 0; margin-top: 3px; }
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filter-pill { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg); color: var(--text-muted); cursor: pointer; font-weight: 500; }
+  .filter-pill.active { background: var(--teal-light); color: var(--teal); border-color: rgba(29,158,117,0.4); }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } header h1 { font-size: 20px; } }
+</style>
+</head>
+<body>
+<div class="back-bar"><a href="index.html" class="back-link">← Always an Adventure</a></div>
+<header>
+  <div class="inner">
+    <h1>✦ Adventure Bucket List</h1>
+    <p>Dream it · Plan it · Live it</p>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-num" id="done-count">0</div><div class="stat-lbl">Done!</div></div>
+      <div class="stat"><div class="stat-num" id="todo-count">0</div><div class="stat-lbl">Still to do</div></div>
+      <div class="stat"><div class="stat-num" id="total-count">0</div><div class="stat-lbl">Total dreams</div></div>
+    </div>
+    <div class="prog-row" style="margin-top:1rem"><span>Adventures completed</span><span id="pct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('list')">🗒 All Adventures</button>
+    <button class="tab" onclick="switchTab('add')">+ Add New</button>
+  </div>
+
+  <div id="tab-list">
+    <div class="filter-row">
+      <button class="filter-pill active" onclick="setFilter('all')">All</button>
+      <button class="filter-pill" onclick="setFilter('todo')">Still to do</button>
+      <button class="filter-pill" onclick="setFilter('done')">Done ✓</button>
+      <button class="filter-pill" onclick="setFilter('camping')">⛺ Camping</button>
+      <button class="filter-pill" onclick="setFilter('rv')">🚐 RV</button>
+      <button class="filter-pill" onclick="setFilter('hiking')">🥾 Hiking</button>
+      <button class="filter-pill" onclick="setFilter('travel')">✈️ Travel</button>
+      <button class="filter-pill" onclick="setFilter('experience')">⭐ Experience</button>
+    </div>
+    <div id="item-list"></div>
+  </div>
+
+  <div id="tab-add" style="display:none">
+    <div class="add-form">
+      <h3>+ Add a bucket list adventure</h3>
+      <div class="form-grid">
+        <div class="form-full"><label>Adventure / Experience</label><input id="a-name" type="text" placeholder="e.g. Sleep under the stars in the desert"></div>
+        <div><label>Category</label>
+          <select id="a-cat">
+            <option value="camping">⛺ Camping</option>
+            <option value="rv">🚐 RV Adventure</option>
+            <option value="hiking">🥾 Hiking / Outdoors</option>
+            <option value="travel">✈️ Travel</option>
+            <option value="experience">⭐ Experience</option>
+          </select>
+        </div>
+        <div><label>Priority</label>
+          <select id="a-priority"><option value="high">🔴 Must do!</option><option value="med" selected>🟡 Someday</option><option value="low">🟢 Dream</option></select>
+        </div>
+        <div class="form-full"><label>Notes / Why it's on the list</label><textarea id="a-notes" placeholder="Why does this excite you? Who would you bring? Any specific details..."></textarea></div>
+        <div class="form-full"><label>Link (inspiration, trail info, booking, etc.)</label><input id="a-link" type="url" placeholder="https://..."></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addItem()">Add to list</button><button class="btn-secondary" onclick="clearForm()">Clear</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const catIcon = { camping:'⛺', rv:'🚐', hiking:'🥾', travel:'✈️', experience:'⭐' };
+const catLabel = { camping:'Camping', rv:'RV Adventure', hiking:'Hiking / Outdoors', travel:'Travel', experience:'Experience' };
+const catClass = { camping:'teal', rv:'amber', hiking:'purple', travel:'coral', experience:'amber' };
+const pDot = { high:'🔴', med:'🟡', low:'🟢' };
+
+let activeFilter = 'all';
+let data = JSON.parse(localStorage.getItem('bucket_data') || '[]');
+function save() { localStorage.setItem('bucket_data', JSON.stringify(data)); }
+
+function addItem() {
+  const name = document.getElementById('a-name').value.trim();
+  if (!name) { alert('Please describe the adventure.'); return; }
+  data.unshift({ id: Date.now(), name,
+    cat: document.getElementById('a-cat').value,
+    priority: document.getElementById('a-priority').value,
+    notes: document.getElementById('a-notes').value.trim(),
+    link: document.getElementById('a-link').value.trim(),
+    done: false, doneDate: null
+  });
+  save(); clearForm(); switchTab('list'); renderAll();
+}
+
+function clearForm() {
+  document.getElementById('a-name').value='';
+  document.getElementById('a-notes').value='';
+  document.getElementById('a-link').value='';
+  document.getElementById('a-cat').value='camping';
+  document.getElementById('a-priority').value='med';
+}
+
+function toggleDone(id) {
+  const item = data.find(i=>i.id===id);
+  if (!item) return;
+  item.done = !item.done;
+  item.doneDate = item.done ? new Date().toISOString().split('T')[0] : null;
+  save(); renderAll();
+}
+
+function deleteItem(id) {
+  if (!confirm('Remove this adventure?')) return;
+  data = data.filter(i=>i.id!==id); save(); renderAll();
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.toggle('active', p.textContent.trim().startsWith(f==='all'?'All':f==='todo'?'Still':f==='done'?'Done':catLabel[f]?catLabel[f]:f)));
+  renderAll();
+}
+
+function renderAll() {
+  const done = data.filter(i=>i.done).length;
+  const total = data.length;
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('todo-count').textContent = total - done;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('pct').textContent = total ? Math.round(done/total*100)+'%' : '0%';
+  document.getElementById('prog-bar').style.width = total ? (done/total*100)+'%' : '0%';
+
+  let items = data;
+  if (activeFilter === 'todo') items = data.filter(i=>!i.done);
+  else if (activeFilter === 'done') items = data.filter(i=>i.done);
+  else if (['camping','rv','hiking','travel','experience'].includes(activeFilter)) items = data.filter(i=>i.cat===activeFilter);
+
+  // Sort: not done first (by priority), then done
+  const pOrder = {high:0,med:1,low:2};
+  items = [...items].sort((a,b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    return (pOrder[a.priority]||1) - (pOrder[b.priority]||1);
+  });
+
+  const el = document.getElementById('item-list');
+  if (!items.length) { el.innerHTML = `<div class="empty">${activeFilter==='done'?'No adventures completed yet — the journey awaits!':'No adventures here yet — add something exciting!'}</div>`; return; }
+  el.innerHTML = items.map(i=>`
+    <div class="item ${i.done?'done':''}" onclick="toggleDone(${i.id})">
+      <div class="check-circle"><span class="check-mark">✓</span></div>
+      <div class="cat-icon">${catIcon[i.cat]||'✦'}</div>
+      <div class="item-body">
+        <div class="item-title">${i.name}</div>
+        ${i.done && i.doneDate ? `<div class="item-sub">Completed ${new Date(i.doneDate+'T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'})}</div>` : ''}
+        ${i.notes ? `<div class="item-notes">${i.notes}</div>` : ''}
+        <div class="item-footer">
+          <span class="tag ${catClass[i.cat]||'teal'}">${catLabel[i.cat]||i.cat}</span>
+          ${!i.done ? `<span class="tag">${pDot[i.priority]||'🟡'} ${i.priority==='high'?'Must do':i.priority==='med'?'Someday':'Dream it'}</span>` : ''}
+          ${i.link ? `<a href="${i.link}" target="_blank" class="ext-link" onclick="event.stopPropagation()">🔗 Learn more</a>` : ''}
+        </div>
+      </div>
+      <button class="delete-btn" onclick="event.stopPropagation();deleteItem(${i.id})">✕</button>
+    </div>`).join('');
+}
+
+function switchTab(tab) {
+  document.getElementById('tab-list').style.display = tab==='list'?'':'none';
+  document.getElementById('tab-add').style.display = tab==='add'?'':'none';
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='list')||(i===1&&tab==='add')));
+}
+
+renderAll();
+</script>
+</body>
+</html>

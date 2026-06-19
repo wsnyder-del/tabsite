@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sewing Studio · Always an Adventure</title>
+<style>
+  :root {
+    --purple: #534AB7; --purple-light: #EEEDFE; --purple-mid: #7F77DD; --purple-dark: #26215C;
+    --pink: #993556; --pink-light: #FBEAF0;
+    --green: #0F6E56; --green-light: #E1F5EE;
+    --amber: #854F0B; --amber-light: #FAEEDA;
+    --text: #1a1a1a; --text-muted: #555; --text-hint: #999;
+    --border: rgba(0,0,0,0.11); --bg: #fff; --bg-soft: #f7f6f2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-soft); color: var(--text); }
+  .back-bar { background: #26215C; padding: 10px 1.5rem; }
+  .back-link { color: #CECBF6; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+  .back-link:hover { color: #fff; }
+  header { background: linear-gradient(135deg, #26215C 0%, #7F77DD 100%); padding: 2rem 1.5rem 1.5rem; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; opacity: 0.07; background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px; }
+  header .inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+  header h1 { color: #fff; font-size: 26px; font-weight: 700; }
+  header p { color: #CECBF6; font-size: 13px; margin-top: 4px; }
+  .stats-bar { display: flex; gap: 12px; margin-top: 1.25rem; flex-wrap: wrap; }
+  .stat { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; }
+  .stat-num { color: #fff; font-size: 22px; font-weight: 700; }
+  .stat-lbl { color: #CECBF6; font-size: 11px; margin-top: 1px; }
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg); border-radius: 10px; padding: 4px; border: 0.5px solid var(--border); }
+  .tab { flex: 1; padding: 9px 8px; border-radius: 7px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-muted); transition: all 0.15s; text-align: center; }
+  .tab.active { background: var(--purple); color: #fff; }
+  .add-form { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
+  .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-full { grid-column: 1/-1; }
+  label { font-size: 11px; font-weight: 600; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+  input, textarea, select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg-soft); font-size: 13px; color: var(--text); outline: none; font-family: inherit; }
+  input:focus, textarea:focus, select:focus { border-color: var(--purple-mid); background: var(--bg); }
+  textarea { resize: vertical; min-height: 70px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-primary { padding: 9px 18px; border-radius: 8px; border: none; background: var(--purple); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: var(--purple-dark); }
+  .btn-secondary { padding: 9px 18px; border-radius: 8px; border: 0.5px solid var(--border); background: none; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 10px; }
+  .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .card-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-top: 6px; }
+  .card-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 3px 9px; border-radius: 10px; background: var(--bg-soft); border: 0.5px solid var(--border); color: var(--text-hint); }
+  .tag.purple { background: var(--purple-light); color: var(--purple); border-color: rgba(83,74,183,0.25); }
+  .tag.pink { background: var(--pink-light); color: var(--pink); }
+  .tag.green { background: var(--green-light); color: var(--green); }
+  .tag.amber { background: var(--amber-light); color: var(--amber); }
+  .status-badge { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 500; }
+  .s-active { background: #E6F1FB; color: #185FA5; }
+  .s-done { background: var(--green-light); color: var(--green); }
+  .s-paused { background: var(--amber-light); color: var(--amber); }
+  .delete-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+  .delete-btn:hover { color: #c0392b; }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-hint); font-size: 14px; }
+  .ext-link { color: var(--purple); text-decoration: underline; font-size: 12px; }
+  .priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .p-high { background: #e24b4a; } .p-med { background: #EF9F27; } .p-low { background: #639922; }
+  .fabric-swatch { width: 18px; height: 18px; border-radius: 4px; border: 0.5px solid var(--border); flex-shrink: 0; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } header h1 { font-size: 20px; } .tab { font-size: 11px; } }
+</style>
+</head>
+<body>
+<div class="back-bar"><a href="index.html" class="back-link">← Always an Adventure</a></div>
+<header>
+  <div class="inner">
+    <h1>🧵 Sewing Studio</h1>
+    <p>Projects, fabric stash, patterns, and inspiration</p>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-num" id="active-count">0</div><div class="stat-lbl">Active projects</div></div>
+      <div class="stat"><div class="stat-num" id="done-count">0</div><div class="stat-lbl">Completed</div></div>
+      <div class="stat"><div class="stat-num" id="wishlist-count">0</div><div class="stat-lbl">Pattern wishlist</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('projects')">🪡 Projects</button>
+    <button class="tab" onclick="switchTab('patterns')">📐 Patterns &amp; Ideas</button>
+    <button class="tab" onclick="switchTab('stash')">🎨 Fabric Stash</button>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="tab-projects">
+    <div class="add-form">
+      <h3>+ Add a project</h3>
+      <div class="form-grid">
+        <div><label>Project name</label><input id="p-name" type="text" placeholder="e.g. Quilted table runner"></div>
+        <div><label>Status</label>
+          <select id="p-status"><option value="active">🔵 In progress</option><option value="done">✅ Completed</option><option value="paused">⏸ On hold</option></select>
+        </div>
+        <div><label>Pattern / Source</label><input id="p-pattern" type="text" placeholder="e.g. Missouri Star Block of the Month"></div>
+        <div><label>For whom</label><input id="p-for" type="text" placeholder="e.g. Gift for Mom"></div>
+        <div><label>Fabric / Materials</label><input id="p-fabric" type="text" placeholder="e.g. Cotton batik, navy blue"></div>
+        <div><label>Started / Target done</label><input id="p-dates" type="text" placeholder="e.g. May 2025 → July 2025"></div>
+        <div class="form-full"><label>Notes</label><textarea id="p-notes" placeholder="Progress notes, modifications, what you'd do differently..."></textarea></div>
+        <div class="form-full"><label>Link (pattern, tutorial, inspiration)</label><input id="p-link" type="url" placeholder="https://..."></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addProject()">Save project</button><button class="btn-secondary" onclick="clearProjectForm()">Clear</button></div>
+    </div>
+    <div id="project-list"></div>
+  </div>
+
+  <!-- PATTERNS & IDEAS -->
+  <div id="tab-patterns" style="display:none">
+    <div class="add-form">
+      <h3>+ Save a pattern or idea</h3>
+      <div class="form-grid">
+        <div><label>Pattern / Project name</label><input id="w-name" type="text" placeholder="e.g. Cathedral Windows quilt"></div>
+        <div><label>Designer / Source</label><input id="w-source" type="text" placeholder="e.g. Missouri Star, Etsy, etc."></div>
+        <div><label>Priority</label>
+          <select id="w-priority"><option value="high">🔴 Make soon!</option><option value="med" selected>🟡 On the list</option><option value="low">🟢 Someday</option></select>
+        </div>
+        <div><label>Difficulty</label>
+          <select id="w-diff"><option value="">—</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+        </div>
+        <div class="form-full"><label>Notes / Why I love it</label><textarea id="w-notes" placeholder="What drew you to this pattern? Color ideas, who it's for..."></textarea></div>
+        <div class="form-full"><label>Link (pattern page, Pinterest, YouTube tutorial, shop)</label><input id="w-link" type="url" placeholder="https://..."></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addWishlist()">Save pattern</button><button class="btn-secondary" onclick="clearWishlistForm()">Clear</button></div>
+    </div>
+    <div id="wishlist-list"></div>
+  </div>
+
+  <!-- FABRIC STASH -->
+  <div id="tab-stash" style="display:none">
+    <div class="add-form">
+      <h3>+ Add to stash</h3>
+      <div class="form-grid">
+        <div><label>Fabric description</label><input id="f-name" type="text" placeholder="e.g. Navy cotton print, floral"></div>
+        <div><label>Color</label><input id="f-color" type="color" value="#8B5CF6" style="height:36px;padding:4px;"></div>
+        <div><label>Amount / Yardage</label><input id="f-yards" type="text" placeholder="e.g. 3 yards"></div>
+        <div><label>Content / Type</label><input id="f-type" type="text" placeholder="e.g. 100% cotton, flannel, linen"></div>
+        <div><label>Where from</label><input id="f-from" type="text" placeholder="e.g. Jo-Ann, quilt show, online"></div>
+        <div><label>Earmarked for</label><input id="f-for" type="text" placeholder="e.g. Christmas quilt"></div>
+        <div class="form-full"><label>Notes</label><textarea id="f-notes" placeholder="Wash instructions, special details, where it's stored..."></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addFabric()">Add to stash</button><button class="btn-secondary" onclick="clearFabricForm()">Clear</button></div>
+    </div>
+    <div id="fabric-list"></div>
+  </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('sewing_data') || '{"projects":[],"wishlist":[],"fabric":[]}');
+function save() { localStorage.setItem('sewing_data', JSON.stringify(data)); }
+
+// Projects
+function addProject() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { alert('Please enter a project name.'); return; }
+  data.projects.unshift({ id: Date.now(), name,
+    status: document.getElementById('p-status').value,
+    pattern: document.getElementById('p-pattern').value.trim(),
+    forWhom: document.getElementById('p-for').value.trim(),
+    fabric: document.getElementById('p-fabric').value.trim(),
+    dates: document.getElementById('p-dates').value.trim(),
+    notes: document.getElementById('p-notes').value.trim(),
+    link: document.getElementById('p-link').value.trim()
+  });
+  save(); clearProjectForm(); renderAll();
+}
+function clearProjectForm() {
+  ['p-name','p-pattern','p-for','p-fabric','p-dates','p-notes','p-link'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-status').value='active';
+}
+function deleteProject(id) { if(!confirm('Delete?'))return; data.projects=data.projects.filter(p=>p.id!==id); save(); renderAll(); }
+
+// Wishlist
+function addWishlist() {
+  const name = document.getElementById('w-name').value.trim();
+  if (!name) { alert('Please enter a pattern name.'); return; }
+  data.wishlist.unshift({ id: Date.now(), name,
+    source: document.getElementById('w-source').value.trim(),
+    priority: document.getElementById('w-priority').value,
+    diff: document.getElementById('w-diff').value,
+    notes: document.getElementById('w-notes').value.trim(),
+    link: document.getElementById('w-link').value.trim()
+  });
+  save(); clearWishlistForm(); renderAll();
+}
+function clearWishlistForm() {
+  ['w-name','w-source','w-notes','w-link'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('w-priority').value='med'; document.getElementById('w-diff').value='';
+}
+function deleteWishlist(id) { if(!confirm('Delete?'))return; data.wishlist=data.wishlist.filter(w=>w.id!==id); save(); renderAll(); }
+
+// Fabric
+function addFabric() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Please describe the fabric.'); return; }
+  data.fabric.unshift({ id: Date.now(), name,
+    color: document.getElementById('f-color').value,
+    yards: document.getElementById('f-yards').value.trim(),
+    type: document.getElementById('f-type').value.trim(),
+    from: document.getElementById('f-from').value.trim(),
+    forItem: document.getElementById('f-for').value.trim(),
+    notes: document.getElementById('f-notes').value.trim()
+  });
+  save(); clearFabricForm(); renderAll();
+}
+function clearFabricForm() {
+  ['f-name','f-yards','f-type','f-from','f-for','f-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-color').value='#8B5CF6';
+}
+function deleteFabric(id) { if(!confirm('Delete?'))return; data.fabric=data.fabric.filter(f=>f.id!==id); save(); renderAll(); }
+
+const statusLabel = { active:'🔵 In progress', done:'✅ Completed', paused:'⏸ On hold' };
+const statusClass = { active:'s-active', done:'s-done', paused:'s-paused' };
+const pDot = { high:'p-high', med:'p-med', low:'p-low' };
+
+function renderAll() {
+  const activeP = data.projects.filter(p=>p.status==='active').length;
+  const doneP = data.projects.filter(p=>p.status==='done').length;
+  document.getElementById('active-count').textContent = activeP;
+  document.getElementById('done-count').textContent = doneP;
+  document.getElementById('wishlist-count').textContent = data.wishlist.length;
+
+  const pl = document.getElementById('project-list');
+  if (!data.projects.length) { pl.innerHTML='<div class="empty">No projects yet — start your first one above!</div>'; }
+  else pl.innerHTML = data.projects.map(p=>`
+    <div class="card">
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-title">${p.name}</div>
+          <div class="card-sub">${p.pattern?'Pattern: '+p.pattern:''} ${p.forWhom?'· For: '+p.forWhom:''}</div>
+        </div>
+        <span class="status-badge ${statusClass[p.status]||'s-active'}">${statusLabel[p.status]||p.status}</span>
+        <button class="delete-btn" onclick="deleteProject(${p.id})">✕</button>
+      </div>
+      ${p.notes?`<div class="card-body">${p.notes}</div>`:''}
+      <div class="card-footer">
+        ${p.fabric?`<span class="tag purple">🧶 ${p.fabric}</span>`:''}
+        ${p.dates?`<span class="tag">${p.dates}</span>`:''}
+        ${p.link?`<a href="${p.link}" target="_blank" class="ext-link">🔗 Pattern link</a>`:''}
+      </div>
+    </div>`).join('');
+
+  const wl = document.getElementById('wishlist-list');
+  if (!data.wishlist.length) { wl.innerHTML='<div class="empty">No patterns saved yet — start collecting inspiration!</div>'; }
+  else wl.innerHTML = data.wishlist.map(w=>`
+    <div class="card">
+      <div class="card-header">
+        <div class="priority-dot ${pDot[w.priority]||'p-med'}"></div>
+        <div style="flex:1">
+          <div class="card-title">${w.name}</div>
+          <div class="card-sub">${w.source?'By '+w.source:''} ${w.diff?'· '+w.diff:''}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteWishlist(${w.id})">✕</button>
+      </div>
+      ${w.notes?`<div class="card-body">${w.notes}</div>`:''}
+      <div class="card-footer">
+        <span class="tag amber">${w.priority==='high'?'🔴 Make soon':w.priority==='med'?'🟡 On the list':'🟢 Someday'}</span>
+        ${w.link?`<a href="${w.link}" target="_blank" class="ext-link">🔗 View pattern</a>`:''}
+      </div>
+    </div>`).join('');
+
+  const fl = document.getElementById('fabric-list');
+  if (!data.fabric.length) { fl.innerHTML='<div class="empty">No fabric logged yet — what\'s in the stash?</div>'; }
+  else fl.innerHTML = data.fabric.map(f=>`
+    <div class="card">
+      <div class="card-header">
+        <div class="fabric-swatch" style="background:${f.color}"></div>
+        <div style="flex:1">
+          <div class="card-title">${f.name}</div>
+          <div class="card-sub">${f.yards?f.yards:''} ${f.type?'· '+f.type:''} ${f.from?'· from '+f.from:''}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteFabric(${f.id})">✕</button>
+      </div>
+      ${f.notes?`<div class="card-body">${f.notes}</div>`:''}
+      <div class="card-footer">
+        ${f.forItem?`<span class="tag purple">For: ${f.forItem}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function switchTab(tab) {
+  ['projects','patterns','stash'].forEach(t => document.getElementById('tab-'+t).style.display = t===tab?'':'none');
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['projects','patterns','stash'][i]===tab));
+}
+
+renderAll();
+</script>
+</body>
+</html>

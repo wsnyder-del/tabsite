@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sea Cadets Hub · Always an Adventure</title>
+<style>
+  :root {
+    --navy: #042C53; --blue: #185FA5; --blue-light: #E6F1FB; --blue-mid: #378ADD;
+    --coral: #993C1D; --coral-light: #FAECE7;
+    --green: #0F6E56; --green-light: #E1F5EE;
+    --amber: #854F0B; --amber-light: #FAEEDA;
+    --text: #1a1a1a; --text-muted: #555; --text-hint: #999;
+    --border: rgba(0,0,0,0.11); --bg: #fff; --bg-soft: #f7f6f2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-soft); color: var(--text); }
+  .back-bar { background: var(--navy); padding: 10px 1.5rem; }
+  .back-link { color: #9FE1CB; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+  .back-link:hover { color: #fff; }
+  header { background: linear-gradient(135deg, #042C53 0%, #185FA5 60%, #993C1D 100%); padding: 2rem 1.5rem 1.5rem; position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; opacity: 0.07; background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px; }
+  header .inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+  header h1 { color: #fff; font-size: 26px; font-weight: 700; }
+  header p { color: #B5D4F4; font-size: 13px; margin-top: 4px; }
+  .stats-bar { display: flex; gap: 12px; margin-top: 1.25rem; flex-wrap: wrap; }
+  .stat { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; }
+  .stat-num { color: #fff; font-size: 22px; font-weight: 700; }
+  .stat-lbl { color: #B5D4F4; font-size: 11px; margin-top: 1px; }
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg); border-radius: 10px; padding: 4px; border: 0.5px solid var(--border); }
+  .tab { flex: 1; padding: 9px 8px; border-radius: 7px; border: none; background: none; cursor: pointer; font-size: 12px; font-weight: 500; color: var(--text-muted); transition: all 0.15s; text-align: center; }
+  .tab.active { background: var(--navy); color: #fff; }
+  .add-form { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
+  .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-full { grid-column: 1/-1; }
+  label { font-size: 11px; font-weight: 600; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+  input, textarea, select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg-soft); font-size: 13px; color: var(--text); outline: none; font-family: inherit; }
+  input:focus, textarea:focus, select:focus { border-color: var(--blue-mid); background: var(--bg); }
+  textarea { resize: vertical; min-height: 70px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-primary { padding: 9px 18px; border-radius: 8px; border: none; background: var(--navy); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: #0C447C; }
+  .btn-secondary { padding: 9px 18px; border-radius: 8px; border: 0.5px solid var(--border); background: none; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 10px; }
+  .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .card-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-top: 6px; }
+  .card-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 3px 9px; border-radius: 10px; background: var(--bg-soft); border: 0.5px solid var(--border); color: var(--text-hint); }
+  .tag.navy { background: var(--blue-light); color: var(--blue); }
+  .tag.coral { background: var(--coral-light); color: var(--coral); }
+  .tag.green { background: var(--green-light); color: var(--green); }
+  .tag.amber { background: var(--amber-light); color: var(--amber); }
+  .delete-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--text-hint); font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+  .delete-btn:hover { color: #c0392b; }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-hint); font-size: 14px; }
+  .upcoming-banner { background: var(--blue-light); border: 0.5px solid rgba(24,95,165,0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .upcoming-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+  .upcoming-text { font-size: 13px; color: var(--blue); font-weight: 500; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } header h1 { font-size: 20px; } }
+</style>
+</head>
+<body>
+<div class="back-bar"><a href="index.html" class="back-link">← Always an Adventure</a></div>
+<header>
+  <div class="inner">
+    <h1>⚓ Sea Cadets Hub</h1>
+    <p>Volunteer log, events, hours, and unit memories</p>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-num" id="hours-count">0</div><div class="stat-lbl">Volunteer hours</div></div>
+      <div class="stat"><div class="stat-num" id="event-count">0</div><div class="stat-lbl">Events logged</div></div>
+      <div class="stat"><div class="stat-num" id="upcoming-count">0</div><div class="stat-lbl">Upcoming events</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('log')">📋 Volunteer Log</button>
+    <button class="tab" onclick="switchTab('upcoming')">📅 Upcoming Events</button>
+    <button class="tab" onclick="switchTab('notes')">📝 Unit Notes</button>
+  </div>
+
+  <!-- VOLUNTEER LOG -->
+  <div id="tab-log">
+    <div class="add-form">
+      <h3>+ Log volunteer time</h3>
+      <div class="form-grid">
+        <div><label>Event / Activity</label><input id="l-name" type="text" placeholder="e.g. Drill weekend, fundraiser"></div>
+        <div><label>Date</label><input id="l-date" type="date"></div>
+        <div><label>Hours</label><input id="l-hours" type="number" min="0.5" step="0.5" placeholder="4"></div>
+        <div><label>Role</label><input id="l-role" type="text" placeholder="e.g. Instructor, chaperone, logistics"></div>
+        <div class="form-full"><label>Notes / Highlights</label><textarea id="l-notes" placeholder="What happened, cadet achievements, memorable moments..."></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addLog()">Log hours</button><button class="btn-secondary" onclick="clearLogForm()">Clear</button></div>
+    </div>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- UPCOMING EVENTS -->
+  <div id="tab-upcoming" style="display:none">
+    <div class="add-form">
+      <h3>+ Add upcoming event</h3>
+      <div class="form-grid">
+        <div><label>Event name</label><input id="u-name" type="text" placeholder="e.g. Spring encampment"></div>
+        <div><label>Date</label><input id="u-date" type="date"></div>
+        <div><label>Location</label><input id="u-loc" type="text" placeholder="e.g. NAS Great Lakes, IL"></div>
+        <div><label>Type</label>
+          <select id="u-type">
+            <option value="">— select —</option>
+            <option>Drill weekend</option><option>Encampment</option><option>Fundraiser</option>
+            <option>Community service</option><option>Competition</option><option>Training</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-full"><label>Notes / What to prepare</label><textarea id="u-notes" placeholder="Items to bring, volunteers needed, cadet assignments..."></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addUpcoming()">Add event</button><button class="btn-secondary" onclick="clearUpcomingForm()">Clear</button></div>
+    </div>
+    <div id="upcoming-list"></div>
+  </div>
+
+  <!-- UNIT NOTES -->
+  <div id="tab-notes" style="display:none">
+    <div class="add-form">
+      <h3>+ Add a note</h3>
+      <div class="form-grid">
+        <div><label>Title</label><input id="n-title" type="text" placeholder="e.g. Cadet of the Year nominees"></div>
+        <div><label>Date</label><input id="n-date" type="date"></div>
+        <div class="form-full"><label>Note</label><textarea id="n-body" style="min-height:100px" placeholder="Unit updates, cadet achievements, resources, contacts, reminders..."></textarea></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="addNote()">Save note</button><button class="btn-secondary" onclick="clearNoteForm()">Clear</button></div>
+    </div>
+    <div id="notes-list"></div>
+  </div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('cadets_data') || '{"log":[],"upcoming":[],"notes":[]}');
+function save() { localStorage.setItem('cadets_data', JSON.stringify(data)); }
+
+function addLog() {
+  const name = document.getElementById('l-name').value.trim();
+  if (!name) { alert('Please enter an event name.'); return; }
+  data.log.unshift({ id: Date.now(), name,
+    date: document.getElementById('l-date').value,
+    hours: parseFloat(document.getElementById('l-hours').value)||0,
+    role: document.getElementById('l-role').value.trim(),
+    notes: document.getElementById('l-notes').value.trim()
+  });
+  save(); clearLogForm(); renderAll();
+}
+function clearLogForm() {
+  ['l-name','l-date','l-hours','l-role','l-notes'].forEach(id=>document.getElementById(id).value='');
+}
+function deleteLog(id) { if(!confirm('Delete?'))return; data.log=data.log.filter(l=>l.id!==id); save(); renderAll(); }
+
+function addUpcoming() {
+  const name = document.getElementById('u-name').value.trim();
+  if (!name) { alert('Please enter an event name.'); return; }
+  data.upcoming.unshift({ id: Date.now(), name,
+    date: document.getElementById('u-date').value,
+    loc: document.getElementById('u-loc').value.trim(),
+    type: document.getElementById('u-type').value,
+    notes: document.getElementById('u-notes').value.trim()
+  });
+  save(); clearUpcomingForm(); renderAll();
+}
+function clearUpcomingForm() {
+  ['u-name','u-date','u-loc','u-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('u-type').value='';
+}
+function deleteUpcoming(id) { if(!confirm('Delete?'))return; data.upcoming=data.upcoming.filter(u=>u.id!==id); save(); renderAll(); }
+
+function addNote() {
+  const title = document.getElementById('n-title').value.trim();
+  const body = document.getElementById('n-body').value.trim();
+  if (!title && !body) { alert('Please add a title or note.'); return; }
+  data.notes.unshift({ id: Date.now(), title: title||'Note',
+    date: document.getElementById('n-date').value,
+    body
+  });
+  save(); clearNoteForm(); renderAll();
+}
+function clearNoteForm() {
+  ['n-title','n-date','n-body'].forEach(id=>document.getElementById(id).value='');
+}
+function deleteNote(id) { if(!confirm('Delete?'))return; data.notes=data.notes.filter(n=>n.id!==id); save(); renderAll(); }
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d+'T12:00:00');
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function daysUntil(d) {
+  if (!d) return null;
+  const diff = new Date(d+'T12:00:00') - new Date();
+  return Math.ceil(diff/(1000*60*60*24));
+}
+
+function renderAll() {
+  const totalHours = data.log.reduce((s,l)=>s+l.hours,0);
+  const futureEvents = data.upcoming.filter(u => !u.date || daysUntil(u.date) >= 0);
+  document.getElementById('hours-count').textContent = totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1);
+  document.getElementById('event-count').textContent = data.log.length;
+  document.getElementById('upcoming-count').textContent = futureEvents.length;
+
+  // Log
+  const ll = document.getElementById('log-list');
+  if (!data.log.length) { ll.innerHTML='<div class="empty">No hours logged yet — thank you for your service! ⚓</div>'; }
+  else ll.innerHTML = data.log.map(l=>`
+    <div class="card">
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-title">${l.name}</div>
+          <div class="card-sub">${fmtDate(l.date)} ${l.role?'· '+l.role:''}</div>
+        </div>
+        <span class="tag navy">${l.hours} hr${l.hours!==1?'s':''}</span>
+        <button class="delete-btn" onclick="deleteLog(${l.id})">✕</button>
+      </div>
+      ${l.notes?`<div class="card-body">${l.notes}</div>`:''}
+    </div>`).join('');
+
+  // Upcoming — sort by date
+  const sl = [...data.upcoming].sort((a,b)=>a.date>b.date?1:-1);
+  const ul = document.getElementById('upcoming-list');
+  if (!data.upcoming.length) { ul.innerHTML='<div class="empty">No upcoming events — add the next drill weekend!</div>'; }
+  else ul.innerHTML = sl.map(u=>{
+    const days = u.date ? daysUntil(u.date) : null;
+    const soon = days !== null && days <= 14 && days >= 0;
+    return `
+    <div class="card">
+      ${soon ? `<div class="upcoming-banner"><div class="upcoming-dot"></div><div class="upcoming-text">Coming up in ${days} day${days!==1?'s':''}!</div></div>` : ''}
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-title">${u.name}</div>
+          <div class="card-sub">${fmtDate(u.date)} ${u.loc?'· '+u.loc:''}</div>
+        </div>
+        ${u.type?`<span class="tag coral">${u.type}</span>`:''}
+        <button class="delete-btn" onclick="deleteUpcoming(${u.id})">✕</button>
+      </div>
+      ${u.notes?`<div class="card-body">${u.notes}</div>`:''}
+    </div>`;
+  }).join('');
+
+  // Notes
+  const nl = document.getElementById('notes-list');
+  if (!data.notes.length) { nl.innerHTML='<div class="empty">No notes yet — jot down unit updates, cadet achievements, or reminders.</div>'; }
+  else nl.innerHTML = data.notes.map(n=>`
+    <div class="card">
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-title">${n.title}</div>
+          ${n.date?`<div class="card-sub">${fmtDate(n.date)}</div>`:''}
+        </div>
+        <button class="delete-btn" onclick="deleteNote(${n.id})">✕</button>
+      </div>
+      ${n.body?`<div class="card-body">${n.body}</div>`:''}
+    </div>`).join('');
+}
+
+function switchTab(tab) {
+  ['log','upcoming','notes'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['log','upcoming','notes'][i]===tab));
+}
+
+renderAll();
+</script>
+</body>
+</html>
