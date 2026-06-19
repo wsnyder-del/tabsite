@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>National Parks Tracker</title>
+<style>
+  :root {
+    --green: #0F6E56; --green-light: #E1F5EE; --green-mid: #1D9E75;
+    --blue: #185FA5; --blue-light: #E6F1FB;
+    --amber: #854F0B; --amber-light: #FAEEDA;
+    --text: #1a1a1a; --text-muted: #666; --text-hint: #999;
+    --border: rgba(0,0,0,0.12); --bg: #fff; --bg-secondary: #f7f6f2;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-secondary); color: var(--text); min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #0C447C 0%, #0F6E56 100%);
+    padding: 2rem 1.5rem 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  header::before {
+    content: ''; position: absolute; inset: 0; opacity: 0.08;
+    background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  header .inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+  header h1 { color: #fff; font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  header p { color: #9FE1CB; font-size: 13px; margin-top: 4px; }
+
+  .stats-bar {
+    display: flex; gap: 12px; margin-top: 1.25rem; flex-wrap: wrap;
+  }
+  .stat {
+    background: rgba(255,255,255,0.15); border-radius: 8px;
+    padding: 8px 14px; min-width: 110px;
+  }
+  .stat-num { color: #fff; font-size: 22px; font-weight: 600; }
+  .stat-lbl { color: #9FE1CB; font-size: 11px; margin-top: 1px; }
+
+  .progress-wrap { margin-top: 1rem; }
+  .progress-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .progress-row span { color: #9FE1CB; font-size: 12px; }
+  .progress-track { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; }
+  .progress-fill { height: 100%; border-radius: 3px; background: #5DCAA5; transition: width 0.3s; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg); border-radius: var(--radius); padding: 4px; border: 0.5px solid var(--border); }
+  .tab {
+    flex: 1; padding: 9px 12px; border-radius: 7px; border: none;
+    background: none; cursor: pointer; font-size: 13px; font-weight: 500;
+    color: var(--text-muted); transition: all 0.15s; text-align: center;
+  }
+  .tab.active { background: var(--green); color: #fff; }
+
+  .controls {
+    display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .search-wrap { flex: 1; min-width: 180px; position: relative; }
+  .search-wrap input {
+    width: 100%; padding: 8px 12px 8px 34px; border-radius: 8px;
+    border: 0.5px solid var(--border); background: var(--bg);
+    font-size: 13px; color: var(--text); outline: none;
+  }
+  .search-wrap input:focus { border-color: var(--green-mid); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-hint); font-size: 15px; }
+  .filter-btn {
+    padding: 8px 14px; border-radius: 8px; border: 0.5px solid var(--border);
+    background: var(--bg); font-size: 12px; cursor: pointer; color: var(--text-muted);
+    font-weight: 500; white-space: nowrap;
+  }
+  .filter-btn.active { background: var(--green-light); color: var(--green); border-color: var(--green-mid); }
+
+  .state-filter {
+    padding: 8px 12px; border-radius: 8px; border: 0.5px solid var(--border);
+    background: var(--bg); font-size: 12px; color: var(--text-muted);
+    cursor: pointer; outline: none;
+  }
+
+  .section-header {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-hint); padding: 1rem 0 6px; border-bottom: 0.5px solid var(--border);
+    margin-bottom: 2px; display: flex; justify-content: space-between;
+  }
+
+  .park-list { }
+  .park-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    transition: background 0.1s; border: 0.5px solid transparent;
+    margin-bottom: 2px;
+  }
+  .park-item:hover { background: var(--bg-secondary); }
+  .park-item.checked { background: var(--green-light); border-color: rgba(29,158,117,0.2); }
+
+  .checkbox {
+    width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
+    border: 1.5px solid var(--border); background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .park-item.checked .checkbox { background: var(--green); border-color: var(--green); }
+  .checkmark { color: #fff; font-size: 12px; display: none; }
+  .park-item.checked .checkmark { display: block; }
+
+  .park-name { font-size: 14px; color: var(--text); flex: 1; }
+  .park-item.checked .park-name { color: var(--green); }
+  .park-state { font-size: 11px; color: var(--text-hint); margin-left: auto; }
+  .park-type-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    background: var(--bg-secondary); color: var(--text-hint);
+    border: 0.5px solid var(--border); white-space: nowrap;
+  }
+
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-hint); font-size: 14px; }
+
+  .reset-btn {
+    float: right; font-size: 11px; color: var(--text-hint); background: none;
+    border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px;
+    text-decoration: underline;
+  }
+  .reset-btn:hover { color: #c0392b; }
+
+  @media (max-width: 600px) {
+    header { padding: 1.25rem 1rem; }
+    header h1 { font-size: 22px; }
+    .container { padding: 1rem; }
+    .stat-num { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <p style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9FE1CB;margin-bottom:5px;">✦ adventure tracker</p>
+    <h1>National Parks &amp; NPS Sites</h1>
+    <p>Track every park, monument, battlefield, seashore, and historic site</p>
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num" id="np-count">0</div>
+        <div class="stat-lbl">of 63 National Parks</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="nps-count">0</div>
+        <div class="stat-lbl">of 433 NPS Sites</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-row"><span>National Parks</span><span id="np-pct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="np-bar" style="width:0%"></div></div>
+      <div style="height:6px"></div>
+      <div class="progress-row"><span>All NPS Sites</span><span id="nps-pct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="nps-bar" style="width:0%;background:#85B7EB"></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('np')">⛰ 63 National Parks</button>
+    <button class="tab" onclick="switchTab('all')">🗺 All 433 NPS Sites</button>
+  </div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search" placeholder="Search parks..." oninput="renderList()">
+    </div>
+    <button class="filter-btn" id="filter-all" onclick="setFilter('all')" >All</button>
+    <button class="filter-btn" id="filter-visited" onclick="setFilter('visited')">Visited</button>
+    <button class="filter-btn" id="filter-unvisited" onclick="setFilter('unvisited')">Not yet</button>
+    <select class="state-filter" id="state-filter" onchange="renderList()">
+      <option value="">All states</option>
+    </select>
+  </div>
+
+  <div id="list-container"></div>
+</div>
+
+<script>
+const NP = [
+  ["Acadia","ME","National Park"],
+  ["American Samoa","AS","National Park"],
+  ["Arches","UT","National Park"],
+  ["Badlands","SD","National Park"],
+  ["Big Bend","TX","National Park"],
+  ["Biscayne","FL","National Park"],
+  ["Black Canyon of the Gunnison","CO","National Park"],
+  ["Bryce Canyon","UT","National Park"],
+  ["Canyonlands","UT","National Park"],
+  ["Capitol Reef","UT","National Park"],
+  ["Carlsbad Caverns","NM","National Park"],
+  ["Channel Islands","CA","National Park"],
+  ["Congaree","SC","National Park"],
+  ["Crater Lake","OR","National Park"],
+  ["Cuyahoga Valley","OH","National Park"],
+  ["Death Valley","CA/NV","National Park"],
+  ["Denali","AK","National Park"],
+  ["Dry Tortugas","FL","National Park"],
+  ["Everglades","FL","National Park"],
+  ["Gates of the Arctic","AK","National Park"],
+  ["Gateway Arch","MO","National Park"],
+  ["Glacier","MT","National Park"],
+  ["Glacier Bay","AK","National Park"],
+  ["Grand Canyon","AZ","National Park"],
+  ["Grand Teton","WY","National Park"],
+  ["Great Basin","NV","National Park"],
+  ["Great Sand Dunes","CO","National Park"],
+  ["Great Smoky Mountains","NC/TN","National Park"],
+  ["Guadalupe Mountains","TX","National Park"],
+  ["Haleakalā","HI","National Park"],
+  ["Hawaiʻi Volcanoes","HI","National Park"],
+  ["Hot Springs","AR","National Park"],
+  ["Indiana Dunes","IN","National Park"],
+  ["Isle Royale","MI","National Park"],
+  ["Joshua Tree","CA","National Park"],
+  ["Katmai","AK","National Park"],
+  ["Kenai Fjords","AK","National Park"],
+  ["Kings Canyon","CA","National Park"],
+  ["Kobuk Valley","AK","National Park"],
+  ["Lake Clark","AK","National Park"],
+  ["Lassen Volcanic","CA","National Park"],
+  ["Mammoth Cave","KY","National Park"],
+  ["Mesa Verde","CO","National Park"],
+  ["Mount Rainier","WA","National Park"],
+  ["New River Gorge","WV","National Park"],
+  ["North Cascades","WA","National Park"],
+  ["Olympic","WA","National Park"],
+  ["Petrified Forest","AZ","National Park"],
+  ["Pinnacles","CA","National Park"],
+  ["Redwood","CA","National Park"],
+  ["Rocky Mountain","CO","National Park"],
+  ["Saguaro","AZ","National Park"],
+  ["Sequoia","CA","National Park"],
+  ["Shenandoah","VA","National Park"],
+  ["Theodore Roosevelt","ND","National Park"],
+  ["Virgin Islands","VI","National Park"],
+  ["Voyageurs","MN","National Park"],
+  ["White Sands","NM","National Park"],
+  ["Wind Cave","SD","National Park"],
+  ["Wrangell–St. Elias","AK","National Park"],
+  ["Yellowstone","ID/MT/WY","National Park"],
+  ["Yosemite","CA","National Park"],
+  ["Zion","UT","National Park"]
+];
+
+const ALL_NPS = [
+  ...NP,
+  // National Battlefields (11)
+  ["Antietam","MD","National Battlefield"],
+  ["Big Hole","MT","National Battlefield"],
+  ["Cowpens","SC","National Battlefield"],
+  ["Fort Donelson","KY/TN","National Battlefield"],
+  ["Fort Necessity","PA","National Battlefield"],
+  ["Monocacy","MD","National Battlefield"],
+  ["Moores Creek","NC","National Battlefield"],
+  ["Petersburg","VA","National Battlefield"],
+  ["Stones River","TN","National Battlefield"],
+  ["Tupelo","MS","National Battlefield"],
+  ["Wilson's Creek","MO","National Battlefield"],
+  // National Battlefield Parks (4)
+  ["Kennesaw Mountain","GA","National Battlefield Park"],
+  ["Manassas","VA","National Battlefield Park"],
+  ["Richmond","VA","National Battlefield Park"],
+  ["Horseshoe Bend","AL","National Military Park"],
+  // National Military Parks (9)
+  ["Chickamauga and Chattanooga","GA/TN","National Military Park"],
+  ["Fredericksburg and Spotsylvania","VA","National Military Park"],
+  ["Gettysburg","PA","National Military Park"],
+  ["Guilford Courthouse","NC","National Military Park"],
+  ["Kings Mountain","SC","National Military Park"],
+  ["Pea Ridge","AR","National Military Park"],
+  ["Shiloh","TN","National Military Park"],
+  ["Vicksburg","MS","National Military Park"],
+  ["Saratoga","NY","National Historical Park"],
+  // National Memorials (31)
+  ["Arlington House, The Robert E. Lee Memorial","VA","National Memorial"],
+  ["Chamizal","TX","National Memorial"],
+  ["Coronado","AZ","National Memorial"],
+  ["De Soto","FL","National Memorial"],
+  ["Federal Hall","NY","National Memorial"],
+  ["Flight 93","PA","National Memorial"],
+  ["Ford's Theatre","DC","National Memorial"],
+  ["Franklin Delano Roosevelt Memorial","DC","National Memorial"],
+  ["General Grant","NY","National Memorial"],
+  ["Hamilton Grange","NY","National Memorial"],
+  ["Jefferson Memorial","DC","National Memorial"],
+  ["Korean War Veterans Memorial","DC","National Memorial"],
+  ["Lincoln Memorial","DC","National Memorial"],
+  ["Lyndon Baines Johnson Memorial Grove on the Potomac","DC","National Memorial"],
+  ["Martin Luther King Jr. Memorial","DC","National Memorial"],
+  ["Mount Rushmore","SD","National Memorial"],
+  ["Oklahoma City","OK","National Memorial"],
+  ["Perry's Victory and International Peace Memorial","OH","National Memorial"],
+  ["Roger Williams","RI","National Memorial"],
+  ["Thaddeus Kosciuszko","PA","National Memorial"],
+  ["Theodore Roosevelt Island","DC","National Memorial"],
+  ["Thomas Jefferson Memorial","DC","National Memorial"],
+  ["USS Arizona Memorial","HI","National Memorial"],
+  ["Vietnam Veterans Memorial","DC","National Memorial"],
+  ["Washington Monument","DC","National Memorial"],
+  ["World War I Memorial","DC","National Memorial"],
+  ["World War II Memorial","DC","National Memorial"],
+  ["Wright Brothers","NC","National Memorial"],
+  ["Chamizal","TX","National Memorial"],
+  // National Monuments (85)
+  ["Agate Fossil Beds","NE","National Monument"],
+  ["Alibates Flint Quarries","TX","National Monument"],
+  ["Aztec Ruins","NM","National Monument"],
+  ["Bandelier","NM","National Monument"],
+  ["Birmingham Civil Rights","AL","National Monument"],
+  ["Black Canyon of the Gunnison","CO","National Monument"],
+  ["Booker T. Washington","VA","National Monument"],
+  ["Buck Island Reef","VI","National Monument"],
+  ["Cabrillo","CA","National Monument"],
+  ["Canyon de Chelly","AZ","National Monument"],
+  ["Cape Krusenstern","AK","National Monument"],
+  ["Capulin Volcano","NM","National Monument"],
+  ["Casa Grande Ruins","AZ","National Monument"],
+  ["Castillo de San Marcos","FL","National Monument"],
+  ["Castle Clinton","NY","National Monument"],
+  ["Cedar Breaks","UT","National Monument"],
+  ["César E. Chávez","CA","National Monument"],
+  ["Charles Young Buffalo Soldiers","OH","National Monument"],
+  ["Chiricahua","AZ","National Monument"],
+  ["Colorado","CO","National Monument"],
+  ["Craters of the Moon","ID","National Monument"],
+  ["Devils Postpile","CA","National Monument"],
+  ["Devils Tower","WY","National Monument"],
+  ["Dinosaur","CO/UT","National Monument"],
+  ["El Malpais","NM","National Monument"],
+  ["El Morro","NM","National Monument"],
+  ["Effigy Mounds","IA","National Monument"],
+  ["Florissant Fossil Beds","CO","National Monument"],
+  ["Fort Frederica","GA","National Monument"],
+  ["Fort Matanzas","FL","National Monument"],
+  ["Fort McHenry","MD","National Monument"],
+  ["Fort Pulaski","GA","National Monument"],
+  ["Fort Stanwix","NY","National Monument"],
+  ["Fort Sumter","SC","National Monument"],
+  ["Fort Union","NM","National Monument"],
+  ["Fossil Butte","WY","National Monument"],
+  ["George Washington Birthplace","VA","National Monument"],
+  ["George Washington Carver","MO","National Monument"],
+  ["Gila Cliff Dwellings","NM","National Monument"],
+  ["Governors Island","NY","National Monument"],
+  ["Grand Portage","MN","National Monument"],
+  ["Grant-Kohrs Ranch","MT","National Monument"],
+  ["Hagerman Fossil Beds","ID","National Monument"],
+  ["Hohokam Pima","AZ","National Monument"],
+  ["Homestead","NE","National Monument"],
+  ["Hovenweep","CO/UT","National Monument"],
+  ["Jewel Cave","SD","National Monument"],
+  ["John Day Fossil Beds","OR","National Monument"],
+  ["Lava Beds","CA","National Monument"],
+  ["Little Bighorn Battlefield","MT","National Monument"],
+  ["Maggie L. Walker","VA","National Monument"],
+  ["Medgar and Myrlie Evers Home","MS","National Monument"],
+  ["Minidoka","ID","National Monument"],
+  ["Montezuma Castle","AZ","National Monument"],
+  ["Muir Woods","CA","National Monument"],
+  ["Natural Bridges","UT","National Monument"],
+  ["Navajo","AZ","National Monument"],
+  ["Ocmulgee Mounds","GA","National Monument"],
+  ["Oregon Caves","OR","National Monument"],
+  ["Organ Pipe Cactus","AZ","National Monument"],
+  ["Petroglyph","NM","National Monument"],
+  ["Pipe Spring","AZ","National Monument"],
+  ["Pipestone","MN","National Monument"],
+  ["Poverty Point","LA","National Monument"],
+  ["Rainbow Bridge","UT","National Monument"],
+  ["Russell Cave","AL","National Monument"],
+  ["Salinas Pueblo Missions","NM","National Monument"],
+  ["Scotts Bluff","NE","National Monument"],
+  ["Springfield 1908 Race Riot","IL","National Monument"],
+  ["Statue of Liberty","NY/NJ","National Monument"],
+  ["Sunset Crater Volcano","AZ","National Monument"],
+  ["Timpanogos Cave","UT","National Monument"],
+  ["Tonto","AZ","National Monument"],
+  ["Tumacácori","AZ","National Monument"],
+  ["Tuzigoot","AZ","National Monument"],
+  ["Valles Caldera","NM","National Monument"],
+  ["Vermilion Cliffs","AZ","National Monument"],
+  ["Walnut Canyon","AZ","National Monument"],
+  ["White Sands","NM","National Monument"],
+  ["Wupatki","AZ","National Monument"],
+  ["Yucca House","CO","National Monument"],
+  // National Historic Sites / Historical Parks (76+)
+  ["Abraham Lincoln Birthplace","KY","National Historical Park"],
+  ["Adams","MA","National Historical Park"],
+  ["African Burial Ground","NY","National Monument"],
+  ["Allegheny Portage Railroad","PA","National Historic Site"],
+  ["Amache","CO","National Historic Site"],
+  ["Andersonville","GA","National Historic Site"],
+  ["Andrew Johnson","TN","National Historic Site"],
+  ["Appomattox Court House","VA","National Historical Park"],
+  ["Bent's Old Fort","CO","National Historic Site"],
+  ["Blackwell School","TX","National Historic Site"],
+  ["Boston","MA","National Historical Park"],
+  ["Boston African American","MA","National Historic Site"],
+  ["Brown v. Board of Education","KS","National Historical Park"],
+  ["Cane River Creole","LA","National Historical Park"],
+  ["Carl Sandburg Home","NC","National Historic Site"],
+  ["Carlisle Federal Indian Boarding School","PA","National Monument"],
+  ["Carter G. Woodson Home","DC","National Historic Site"],
+  ["Cedar Creek and Belle Grove","VA","National Historical Park"],
+  ["Chaco Culture","NM","National Historical Park"],
+  ["Charles Pinckney","SC","National Historic Site"],
+  ["Chesapeake and Ohio Canal","DC/MD/WV","National Historical Park"],
+  ["Chickasaw","OK","National Recreation Area"],
+  ["Clara Barton","MD","National Historic Site"],
+  ["Colonial","VA","National Historical Park"],
+  ["Cumberland Gap","KY/TN/VA","National Historical Park"],
+  ["Dayton Aviation Heritage","OH","National Historical Park"],
+  ["DeSoto","FL","National Memorial"],
+  ["Edgar Allan Poe","PA","National Historic Site"],
+  ["Eisenhower","PA","National Historic Site"],
+  ["Eleanor Roosevelt","NY","National Historic Site"],
+  ["Essex","MA","National Heritage Area"],
+  ["Eugene O'Neill","CA","National Historic Site"],
+  ["First Ladies","OH","National Historic Site"],
+  ["Ford's Theatre","DC","National Historic Site"],
+  ["Fort Bowie","AZ","National Historic Site"],
+  ["Fort Davis","TX","National Historic Site"],
+  ["Fort Laramie","WY","National Historic Site"],
+  ["Fort Larned","KS","National Historic Site"],
+  ["Fort Point","CA","National Historic Site"],
+  ["Fort Raleigh","NC","National Historic Site"],
+  ["Fort Scott","KS","National Historic Site"],
+  ["Fort Smith","AR/OK","National Historic Site"],
+  ["Fort Union Trading Post","ND/MT","National Historic Site"],
+  ["Fort Vancouver","WA/OR","National Historical Park"],
+  ["Frederick Douglass","DC","National Historic Site"],
+  ["Frederick Law Olmsted","MA","National Historic Site"],
+  ["Friendship Hill","PA","National Historic Site"],
+  ["Golden Spike","UT","National Historical Park"],
+  ["Grant-Kohrs Ranch","MT","National Historic Site"],
+  ["Hampton","MD","National Historic Site"],
+  ["Harpers Ferry","WV/MD/VA","National Historical Park"],
+  ["Harry S Truman","MO","National Historic Site"],
+  ["Herbert Hoover","IA","National Historic Site"],
+  ["Home of Franklin D. Roosevelt","NY","National Historic Site"],
+  ["Hopewell Culture","OH","National Historical Park"],
+  ["Hopewell Furnace","PA","National Historic Site"],
+  ["Hubbell Trading Post","AZ","National Historic Site"],
+  ["Independence","PA","National Historical Park"],
+  ["James A. Garfield","OH","National Historic Site"],
+  ["Jimmy Carter","GA","National Historical Park"],
+  ["John Fitzgerald Kennedy","MA","National Historic Site"],
+  ["John Muir","CA","National Historic Site"],
+  ["Johnstown Flood","PA","National Memorial"],
+  ["Kalaupapa","HI","National Historical Park"],
+  ["Kaloko-Honokōhau","HI","National Historical Park"],
+  ["Keweenaw","MI","National Historical Park"],
+  ["Knife River Indian Villages","ND","National Historic Site"],
+  ["Lewis and Clark","OR/WA","National Historical Park"],
+  ["Lincoln Home","IL","National Historic Site"],
+  ["Longfellow House–Washington's Headquarters","MA","National Historic Site"],
+  ["Lowell","MA","National Historical Park"],
+  ["Lyndon B. Johnson","TX","National Historical Park"],
+  ["Maggie L. Walker","VA","National Historic Site"],
+  ["Manzanar","CA","National Historic Site"],
+  ["Martin Luther King Jr.","GA","National Historical Park"],
+  ["Martin Van Buren","NY","National Historic Site"],
+  ["Mary McLeod Bethune Council House","DC","National Historic Site"],
+  ["Minute Man","MA","National Historical Park"],
+  ["Morristown","NJ","National Historical Park"],
+  ["Natchez","MS","National Historical Park"],
+  ["New Bedford Whaling","MA","National Historical Park"],
+  ["New Orleans Jazz","LA","National Historical Park"],
+  ["Nez Perce","ID","National Historical Park"],
+  ["Nicodemus","KS","National Historic Site"],
+  ["Ninety Six","SC","National Historic Site"],
+  ["Palo Alto Battlefield","TX","National Historical Park"],
+  ["Pu'uhonua o Hōnaunau","HI","National Historical Park"],
+  ["Puʻukoholā Heiau","HI","National Historic Site"],
+  ["Reconstruction Era","SC","National Historical Park"],
+  ["River Raisin","MI","National Battlefield Park"],
+  ["Rosie the Riveter/WWII Home Front","CA","National Historical Park"],
+  ["Saint Croix Island","ME","International Historic Site"],
+  ["Salem Maritime","MA","National Historic Site"],
+  ["San Antonio Missions","TX","National Historical Park"],
+  ["San Francisco Maritime","CA","National Historical Park"],
+  ["San Juan","PR","National Historic Site"],
+  ["Sand Creek Massacre","CO","National Historic Site"],
+  ["Ste. Genevieve","MO","National Historical Park"],
+  ["Steamtown","PA","National Historic Site"],
+  ["Stones River","TN","National Battlefield"],
+  ["Theodore Roosevelt Birthplace","NY","National Historic Site"],
+  ["Theodore Roosevelt Inaugural","NY","National Historic Site"],
+  ["Thomas Edison","NJ","National Historical Park"],
+  ["Touro Synagogue","RI","National Historic Site"],
+  ["Tuskegee Airmen","AL","National Historic Site"],
+  ["Tuskegee Institute","AL","National Historic Site"],
+  ["Ulysses S. Grant","MO","National Historic Site"],
+  ["Valley Forge","PA","National Historical Park"],
+  ["Vanderbilt Mansion","NY","National Historic Site"],
+  ["Washita Battlefield","OK","National Historic Site"],
+  ["Weir Farm","CT","National Historical Park"],
+  ["Whitman Mission","WA","National Historic Site"],
+  ["William Howard Taft","OH","National Historic Site"],
+  ["Women's Rights","NY","National Historical Park"],
+  // National Recreation Areas (18)
+  ["Amistad","TX","National Recreation Area"],
+  ["Big South Fork","TN/KY","National River & Recreation Area"],
+  ["Bighorn Canyon","MT/WY","National Recreation Area"],
+  ["Chattahoochee River","GA","National Recreation Area"],
+  ["Curecanti","CO","National Recreation Area"],
+  ["Cuyahoga Valley","OH","National Recreation Area"],
+  ["Delaware Water Gap","NJ/PA","National Recreation Area"],
+  ["Gateway","NY/NJ","National Recreation Area"],
+  ["Gauley River","WV","National Recreation Area"],
+  ["Glen Canyon","AZ/UT","National Recreation Area"],
+  ["Golden Gate","CA","National Recreation Area"],
+  ["Lake Chelan","WA","National Recreation Area"],
+  ["Lake Mead","AZ/NV","National Recreation Area"],
+  ["Lake Meredith","TX","National Recreation Area"],
+  ["Lake Roosevelt","WA","National Recreation Area"],
+  ["Ross Lake","WA","National Recreation Area"],
+  ["Santa Monica Mountains","CA","National Recreation Area"],
+  ["Whiskeytown","CA","National Recreation Area"],
+  // National Seashores (10)
+  ["Assateague Island","MD/VA","National Seashore"],
+  ["Canaveral","FL","National Seashore"],
+  ["Cape Cod","MA","National Seashore"],
+  ["Cape Hatteras","NC","National Seashore"],
+  ["Cape Lookout","NC","National Seashore"],
+  ["Cumberland Island","GA","National Seashore"],
+  ["Fire Island","NY","National Seashore"],
+  ["Gulf Islands","FL/MS","National Seashore"],
+  ["Padre Island","TX","National Seashore"],
+  ["Point Reyes","CA","National Seashore"],
+  // National Lakeshores (4)
+  ["Apostle Islands","WI","National Lakeshore"],
+  ["Indiana Dunes","IN","National Lakeshore"],
+  ["Pictured Rocks","MI","National Lakeshore"],
+  ["Sleeping Bear Dunes","MI","National Lakeshore"],
+  // National Rivers (5)
+  ["Big South Fork","TN/KY","National River"],
+  ["Buffalo","AR","National River"],
+  ["Mississippi","MN","National River & Recreation Area"],
+  ["New River Gorge","WV","National River"],
+  ["Ozark","MO","National Scenic Riverways"],
+  // National Parkways (4)
+  ["Blue Ridge Parkway","NC/VA","National Parkway"],
+  ["George Washington Memorial Parkway","DC/MD/VA","National Parkway"],
+  ["John D. Rockefeller Jr. Memorial Parkway","WY","National Parkway"],
+  ["Natchez Trace Parkway","AL/MS/TN","National Parkway"],
+  // National Trails (4 in system)
+  ["Appalachian","ME-GA","National Scenic Trail"],
+  ["Ice Age","WI","National Scenic Trail"],
+  ["Natchez Trace","AL/MS/TN","National Scenic Trail"],
+  ["Potomac Heritage","DC/MD/PA/VA","National Scenic Trail"],
+  // National Parks other / preserves
+  ["Aniakchak","AK","National Monument & Preserve"],
+  ["Bering Land Bridge","AK","National Preserve"],
+  ["Big Cypress","FL","National Preserve"],
+  ["Big Thicket","TX","National Preserve"],
+  ["Mojave","CA","National Preserve"],
+  ["Noatak","AK","National Preserve"],
+  ["Tallgrass Prairie","KS","National Preserve"],
+  ["Timucuan Ecological and Historic Preserve","FL","National Preserve"],
+  ["Yukon-Charley Rivers","AK","National Preserve"],
+  // Other sites
+  ["Catoctin Mountain Park","MD","Park"],
+  ["Constitution Gardens","DC","Park"],
+  ["Fort Washington Park","MD","Park"],
+  ["Greenbelt Park","MD","Park"],
+  ["National Capital Parks-East","DC","Park"],
+  ["Piscataway Park","MD","Park"],
+  ["Prince William Forest Park","VA","Park"],
+  ["Rock Creek Park","DC","Park"],
+  ["Suitland Parkway","DC/MD","Parkway"],
+  ["Wolf Trap National Park for the Performing Arts","VA","Park"],
+  // Affiliate areas and other designations
+  ["Biscayne","FL","National Park"],
+  ["Chesapeake Bay","MD","National Estuary Program"],
+  ["Ford's Theatre","DC","National Historic Site"],
+  ["National Mall and Memorial Parks","DC","National Mall"],
+];
+
+// Deduplicate by name
+const seen = new Set();
+const PARKS = ALL_NPS.filter(p => {
+  const key = p[0] + p[2];
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+});
+
+const NP_NAMES = new Set(NP.map(p => p[0]));
+
+let activeTab = 'np';
+let activeFilter = 'all';
+let visited = JSON.parse(localStorage.getItem('np_visited') || '{}');
+
+function save() { localStorage.setItem('np_visited', JSON.stringify(visited)); }
+
+function togglePark(name) {
+  visited[name] = !visited[name];
+  if (!visited[name]) delete visited[name];
+  save();
+  updateStats();
+  renderList();
+}
+
+function updateStats() {
+  const npVisited = NP.filter(p => visited[p[0]]).length;
+  const allVisited = PARKS.filter(p => visited[p[0]]).length;
+  document.getElementById('np-count').textContent = npVisited;
+  document.getElementById('nps-count').textContent = allVisited;
+  document.getElementById('np-pct').textContent = Math.round(npVisited/63*100) + '%';
+  document.getElementById('nps-pct').textContent = Math.round(allVisited/PARKS.length*100) + '%';
+  document.getElementById('np-bar').style.width = (npVisited/63*100) + '%';
+  document.getElementById('nps-bar').style.width = (allVisited/PARKS.length*100) + '%';
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='np')||(i===1&&tab==='all')));
+  renderList();
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-'+f).classList.add('active');
+  renderList();
+}
+
+function populateStateFilter() {
+  const states = [...new Set(PARKS.map(p => p[1]))].sort();
+  const sel = document.getElementById('state-filter');
+  states.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    sel.appendChild(opt);
+  });
+}
+
+function renderList() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const stateFilter = document.getElementById('state-filter').value;
+  const pool = activeTab === 'np' ? NP : PARKS;
+
+  let items = pool.filter(p => {
+    if (q && !p[0].toLowerCase().includes(q) && !p[1].toLowerCase().includes(q)) return false;
+    if (stateFilter && p[1] !== stateFilter) return false;
+    if (activeFilter === 'visited' && !visited[p[0]]) return false;
+    if (activeFilter === 'unvisited' && visited[p[0]]) return false;
+    return true;
+  });
+
+  // Group by type for all-NPS tab
+  const container = document.getElementById('list-container');
+  if (activeTab === 'np') {
+    if (!items.length) { container.innerHTML = '<div class="empty">No parks match your search.</div>'; return; }
+    container.innerHTML = `
+      <div class="section-header">
+        <span>National Parks (63)</span>
+        <button class="reset-btn" onclick="if(confirm('Clear all visited?')){visited={};save();updateStats();renderList();}">Reset all</button>
+      </div>
+      <div class="park-list" id="the-list"></div>`;
+    const list = document.getElementById('the-list');
+    items.forEach(p => list.appendChild(makeItem(p)));
+  } else {
+    // Group by type
+    const groups = {};
+    items.forEach(p => {
+      const t = p[2];
+      if (!groups[t]) groups[t] = [];
+      groups[t].push(p);
+    });
+    container.innerHTML = '';
+    if (!items.length) { container.innerHTML = '<div class="empty">No sites match your search.</div>'; return; }
+    const types = Object.keys(groups).sort();
+    types.forEach(type => {
+      const sec = document.createElement('div');
+      sec.innerHTML = `<div class="section-header"><span>${type} (${groups[type].length})</span></div>`;
+      const list = document.createElement('div');
+      list.className = 'park-list';
+      groups[type].forEach(p => list.appendChild(makeItem(p)));
+      sec.appendChild(list);
+      container.appendChild(sec);
+    });
+  }
+}
+
+function makeItem(p) {
+  const [name, state, type] = p;
+  const isChecked = !!visited[name];
+  const div = document.createElement('div');
+  div.className = 'park-item' + (isChecked ? ' checked' : '');
+  div.onclick = () => togglePark(name);
+  div.innerHTML = `
+    <div class="checkbox"><span class="checkmark">✓</span></div>
+    <span class="park-name">${name}</span>
+    ${activeTab==='all' ? '' : `<span class="park-state">${state}</span>`}
+    ${activeTab==='all' ? `<span class="park-state">${state}</span>` : ''}
+  `;
+  return div;
+}
+
+populateStateFilter();
+setFilter('all');
+updateStats();
+renderList();
+</script>
+</body>
+</html>
